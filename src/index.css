@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-navy: #05286f;
+  --color-brand-navy-950: #030a1a;
+  --color-brand-navy-900: #071530;
+  --color-brand-navy-800: #0a1f47;
+  --color-brand-navy-700: #0e2a66;
+  --color-brand-navy-600: #143b8a;
+  --color-brand-navy-500: #1b4fb5;
+  --color-brand-navy-400: #3b74e6;
+  --color-brand-navy-100: #e8f0fe;
+  --color-brand-navy-50: #f0f5ff;
+
+  --color-brand-green: #4ea836;
+  --color-brand-green-950: #0d2608;
+  --color-brand-green-900: #183e10;
+  --color-brand-green-800: #245817;
+  --color-brand-green-700: #327521;
+  --color-brand-green-600: #42932b;
+  --color-brand-green-500: #4ea836;
+  --color-brand-green-400: #68c74e;
+  --color-brand-green-300: #8ee079;
+  --color-brand-green-100: #dcf5d4;
+  --color-brand-green-50: #f0f9ed;
+}
+
+@layer base {
+  :root {
+    --bg-page: #f8fafc;
+    --bg-surface: #ffffff;
+    --border-subtle: #e2e8f0;
+    --text-main: #071530;
+    --text-muted: #475569;
+    --brand-navy: #05286f;
+    --brand-navy-dark: #041c50;
+    --brand-navy-light: #184296;
+    --brand-green: #4ea836;
+    --brand-green-dark: #3b8827;
+    --brand-green-light: #68c74e;
+  }
+
+  .dark {
+    --bg-page: #030a1a;
+    --bg-surface: #071530;
+    --border-subtle: #0e2a66;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --brand-navy: #1b4fb5;
+    --brand-navy-dark: #071530;
+    --brand-navy-light: #3b74e6;
+    --brand-green: #50ab34;
+    --brand-green-dark: #3b8827;
+    --brand-green-light: #68c74e;
+  }
+
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ==========================================================================
+   OFFICIAL PRINT MEDIA STYLES - PHYSICAL ID CARD GENERATION & CREDENTIALS
+   ========================================================================== */
+@media print {
+  /* Enforce exact background colors, crisp borders, and graphics on physical paper */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  @page {
+    size: auto;
+    margin: 8mm 6mm;
+  }
+
+  :root,
+  .dark,
+  html,
+  body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Completely suppress all browser navigation chrome, portal headers, sidebars, buttons, toolbars */
+  header,
+  aside,
+  nav,
+  footer,
+  #sakai-header,
+  #sakai-sidebar,
+  #sakai-breadcrumbs,
+  .no-print,
+  [data-no-print],
+  .print\:hidden,
+  button,
+  .command-palette-modal,
+  .theme-toggle,
+  .sakai-action-bar,
+  #sites-dropdown,
+  .sites-directory-drawer {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Reset layout constraints so the printable target centers cleanly without side padding */
+  main {
+    padding: 0 !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Reset 3D transforms, specular glare, perspectives, and shadows for flat physical print */
+  .print-flat,
+  [style*="rotateX"],
+  [style*="rotateY"],
+  [style*="perspective"],
+  [style*="preserve-3d"] {
+    transform: none !important;
+    perspective: none !important;
+    transform-style: flat !important;
+    box-shadow: none !important;
+    filter: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Prevent page breaks inside card boundaries */
+  .print-avoid-break {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Printable Sheet Container */
+  #printable-id-card-sheet,
+  .id-card-print-target {
+    display: block !important;
+    visibility: visible !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 200mm !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+

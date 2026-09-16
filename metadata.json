@@ -1,0 +1,6 @@
+{
+  "name": "StartSmart Tech Hub LMS",
+  "description": "Institutional Learning Management System with real-time Recharts system overview telemetry, executive administrative cockpit, bulk user management & RBAC security, audit trails, and campus broadcasts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

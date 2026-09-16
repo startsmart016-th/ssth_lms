@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" width="320" height="100">
+  <path d="M 25 65 C 35 30, 48 20, 60 25 C 75 32, 55 75, 45 78 C 38 80, 50 68, 70 52 C 90 38, 105 50, 110 60 C 115 70, 125 45, 140 40 C 155 35, 165 58, 175 48 C 185 38, 195 52, 210 46 C 225 40, 240 55, 255 42 C 268 32, 280 40, 295 38 M 55 60 L 290 55 M 80 82 C 120 78, 200 75, 275 72 M 240 28 L 260 68 M 270 30 L 250 66" 
+    fill="none" 
+    stroke="#0f2942" 
+    stroke-width="2.8" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    opacity="0.95" />
+  <path d="M 30 63 C 42 28, 52 22, 62 27 C 72 32, 58 72, 48 76" 
+    fill="none" 
+    stroke="#05286f" 
+    stroke-width="1.8" 
+    stroke-linecap="round"
+    opacity="0.8" />
+  <circle cx="295" cy="40" r="2.2" fill="#0f2942" />
+</svg>
