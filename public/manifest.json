@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "StartSmart Tech Hub LMS",
+  "short_name": "StartSmart",
+  "description": "Institutional Learning Management System with Digital ID Cards, Offline Access, Course Materials, and Academic Portal",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#05286f",
+  "background_color": "#020617",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

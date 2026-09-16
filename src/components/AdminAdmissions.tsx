@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { User, AdmissionLetterData } from '../types';
 import { AdmissionLetter } from './AdmissionLetter';
+import { safeParseResponse } from '../utils/apiClient';
 import {
   Users,
   CheckCircle2,
@@ -114,8 +115,9 @@ export const AdminAdmissions: React.FC = () => {
         },
       });
 
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const parsed = await safeParseResponse(res, { success: false });
+      const data = parsed.data as any;
+      if (res.ok && data?.success) {
         setActionSuccessMsg(
           `Success: ${applicant.fullName || applicant.name} approved! Assigned ID: ${data.credentials?.idNumber}.`
         );
@@ -131,7 +133,7 @@ export const AdminAdmissions: React.FC = () => {
         // Refresh data lists
         loadAdmissionsData();
       } else {
-        setActionErrorMsg(data.error || 'Failed to approve applicant.');
+        setActionErrorMsg(data?.error || parsed.error || 'Failed to approve applicant.');
       }
     } catch (err: any) {
       setActionErrorMsg(err.message || 'Network error while approving student.');
@@ -160,8 +162,9 @@ export const AdminAdmissions: React.FC = () => {
         setActionSuccessMsg('Applicant rejected and archived.');
         setTimeout(() => setActionSuccessMsg(null), 3000);
       } else {
-        const data = await res.json();
-        setActionErrorMsg(data.error || 'Failed to reject applicant.');
+        const parsed = await safeParseResponse(res, {});
+        const errData = parsed.data as any;
+        setActionErrorMsg(errData?.error || parsed.error || 'Failed to reject applicant.');
       }
     } catch (err: any) {
       setActionErrorMsg(err.message || 'Network communication error.');
@@ -177,10 +180,11 @@ export const AdminAdmissions: React.FC = () => {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
-        const data = await res.json();
+        const parsed = await safeParseResponse(res, {});
+        const data = parsed.data as any;
         setSelectedLetter({
-          letterData: data.letter,
-          student: data.student || student,
+          letterData: data?.letter,
+          student: data?.student || student,
         });
       } else {
         // Fallback synthesised letter

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
+import { safeParseResponse } from '../utils/apiClient';
 
 interface AuthContextType {
   user: User | null;
@@ -42,10 +43,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const res = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${currentToken}` },
+        headers: { Authorization: `Bearer ${currentToken}`, Accept: 'application/json' },
       });
-      if (res.ok) {
-        const data = await res.json();
+      const { ok, data } = await safeParseResponse(res);
+      if (ok && data && data._id) {
         setUser(data);
       } else {
         localStorage.removeItem('startsmart_token');
@@ -67,11 +68,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ identifier, password, pin }),
       });
-      const data = await res.json();
-      if (res.ok && data.token) {
+      const { ok, data, error: parseError } = await safeParseResponse(res);
+      if (ok && data && data.token) {
         localStorage.setItem('startsmart_token', data.token);
         setToken(data.token);
         setUser(data.user);
@@ -81,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           user: data.user,
         };
       }
-      return { success: false, error: data.error || 'Authentication failed' };
+      return { success: false, error: data?.error || parseError || 'Authentication failed' };
     } catch (e: any) {
       return { success: false, error: e.message || 'Network connection failure' };
     }
@@ -118,9 +119,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify(updates),
       });
 
-      if (res.ok) {
-        const updated = await res.json();
-        setUser(updated);
+      const { ok, data } = await safeParseResponse(res);
+      if (ok && data && data._id) {
+        setUser(data);
         return true;
       }
       return false;

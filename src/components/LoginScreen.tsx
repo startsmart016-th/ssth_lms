@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { ThemeToggle } from './ThemeToggle';
+import { PWAInstallButton } from './PWAInstallButton';
 import {
   ShieldCheck,
   Lock,
@@ -110,7 +111,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onOpen
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <PWAInstallButton />
           <ThemeToggle size="sm" showLabel />
           <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-1 rounded-full">
             <ShieldCheck className="w-3.5 h-3.5 text-[#4ea836]" />

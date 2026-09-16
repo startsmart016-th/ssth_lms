@@ -19,6 +19,20 @@ async function startServer() {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+  // Explicit static handlers for PWA assets to prevent Vite SPA HTML fallback
+  app.get(['/manifest.webmanifest', '/manifest.json'], (req, res) => {
+    res.setHeader('Content-Type', 'application/manifest+json');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.sendFile(path.join(process.cwd(), 'public', 'manifest.webmanifest'));
+  });
+
+  app.get('/sw.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.sendFile(path.join(process.cwd(), 'public', 'sw.js'));
+  });
+
   // Serve static files from public directory (avatars, icons, logo assets)
   app.use(express.static(path.join(process.cwd(), 'public')));
 
@@ -38,8 +52,11 @@ async function startServer() {
   app.use('/api', apiRoutes);
 
   // Catch unmatched API routes to prevent Vite from returning HTML for /api/* requests
-  app.use('/api', (req, res) => {
-    res.status(404).json({ error: `API route not found: ${req.method} ${req.originalUrl}` });
+  app.all('/api/*', (req, res) => {
+    res.status(404).json({ error: `API route not found: ${req.method} ${req.originalUrl}`, success: false });
+  });
+  app.all('/api', (req, res) => {
+    res.status(404).json({ error: `API route not found: ${req.method} ${req.originalUrl}`, success: false });
   });
 
   // Global JSON error handler for API routes

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle2, AlertTriangle, ShieldCheck, ArrowLeft, Building, Calendar, Hash, ExternalLink } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
+import { safeParseResponse } from '../utils/apiClient';
 
 interface VerifyViewProps {
   userId: string;
@@ -18,11 +19,11 @@ export const VerifyView: React.FC<VerifyViewProps> = ({ userId, onClose }) => {
       setLoading(true);
       try {
         const res = await fetch(`/api/verify-id/${userId}`);
-        const json = await res.json();
-        if (res.ok && json.verified) {
-          setData(json);
+        const parsed = await safeParseResponse<any>(res, { verified: false });
+        if (parsed.ok && parsed.data?.verified) {
+          setData(parsed.data);
         } else {
-          setError(json.message || 'Credential verification record could not be validated.');
+          setError(parsed.data?.message || parsed.error || 'Credential verification record could not be validated.');
         }
       } catch (e: any) {
         setError(e.message || 'Verification service offline.');

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import { ThemeToggle } from './ThemeToggle';
+import { PWAInstallButton } from './PWAInstallButton';
+import { safeParseResponse } from '../utils/apiClient';
 import {
   GraduationCap,
   Upload,
@@ -117,27 +119,38 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         avatarUrl: avatarUrl.trim() || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fullName.trim())}`,
       };
 
-      const response = await fetch('/api/public/register', {
+      let response = await fetch('/api/public/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      const resData = await response.json();
-
-      if (!response.ok || !resData.success) {
-        throw new Error(resData.error || 'Failed to process admission registration. Please try again.');
+      // Fallback to /api/auth/register if needed
+      if (response.status === 404) {
+        response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload),
+        });
       }
+
+      const { ok, data: resData, error: parseError } = await safeParseResponse(response);
+
+      if (!ok || !response.ok || !resData || resData.success === false) {
+        throw new Error(resData?.error || parseError || 'Failed to process admission registration. Please try again.');
+      }
+
+      const applicantData = resData.student || resData.applicant || {};
 
       setSubmittedData({
         ...payload,
-        id: resData.student?._id,
-        idNumber: resData.student?.idNumber,
-        status: resData.student?.status || 'pending',
+        id: applicantData._id,
+        idNumber: applicantData.idNumber,
+        status: applicantData.status || 'pending',
       });
 
       if (onRegistrationComplete) {
-        onRegistrationComplete(resData.student);
+        onRegistrationComplete(applicantData);
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Network error encountered while submitting application.');
@@ -341,14 +354,16 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <PWAInstallButton />
           <ThemeToggle size="sm" showLabel />
           <button
             onClick={onBackToLogin}
             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition cursor-pointer shadow-2xs"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
-            <span>Already Admitted? Log In</span>
+            <span className="hidden sm:inline">Already Admitted? Log In</span>
+            <span className="sm:hidden">Log In</span>
           </button>
         </div>
       </header>

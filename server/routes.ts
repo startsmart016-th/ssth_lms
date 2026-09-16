@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, Request } from 'express';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import {
@@ -594,8 +594,8 @@ router.get('/auth/me', verifyToken, async (req: AuthenticatedRequest, res: Respo
 // ==========================================
 // PUBLIC STUDENT REGISTRATION WORKFLOW
 // ==========================================
-// POST /api/auth/register: Public student application route
-router.post('/auth/register', async (req, res) => {
+// POST /api/auth/register & /api/public/register: Public student application route
+const handleStudentRegistration = async (req: Request, res: Response) => {
   try {
     const {
       fullName,
@@ -708,7 +708,10 @@ router.post('/auth/register', async (req, res) => {
     console.error('Registration failed:', error);
     res.status(500).json({ error: error.message || 'Failed to submit registration application.' });
   }
-});
+};
+
+router.post('/auth/register', handleStudentRegistration);
+router.post('/public/register', handleStudentRegistration);
 
 // ==========================================
 // ADMIN ADMISSIONS & APPROVALS WORKFLOW

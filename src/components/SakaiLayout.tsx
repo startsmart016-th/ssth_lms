@@ -9,6 +9,7 @@ import {
   triggerCertificateMockEmail,
 } from '../services/notificationService';
 import { EmailNotificationModal } from './EmailNotificationModal';
+import { PWAInstallButton } from './PWAInstallButton';
 import {
   BookOpen,
   LayoutDashboard,
@@ -349,6 +350,11 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
           {/* Center/Right: Quick Search, Sound Toggle, Theme Toggle, Notifications, User Menu, Logout */}
           <div className="flex items-center gap-1.5 sm:gap-2.5">
+            {/* PWA Install Button */}
+            <div className="hidden sm:block">
+              <PWAInstallButton />
+            </div>
+
             {/* Quick Command Palette Button */}
             <button
               type="button"
@@ -913,6 +919,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
               {/* Theme toggle & Sign out in mobile drawer */}
               <div className="p-3 border-t border-slate-200 dark:border-[#0e2a66] space-y-2">
+                <div className="px-1">
+                  <PWAInstallButton />
+                </div>
                 <div className="flex items-center justify-between px-1">
                   <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">Appearance</span>
                   <ThemeToggle size="sm" showLabel />
@@ -954,9 +963,180 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
           </div>
 
           {/* Tool Viewport Container */}
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto print:p-0 print:m-0 print:max-w-none">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 max-w-7xl w-full mx-auto print:p-0 print:m-0 print:max-w-none">
             {children}
           </main>
+
+          {/* MOBILE QUICK NAVIGATION BOTTOM BAR */}
+          <nav
+            aria-label="Mobile Navigation"
+            className="lg:hidden fixed bottom-0 inset-x-0 bg-white/95 dark:bg-[#071530]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#0e2a66] z-40 py-1.5 px-3 flex items-center justify-around shadow-lg no-print print:hidden"
+          >
+            {user?.role === 'admin' ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('overview')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'overview'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <LayoutDashboard className="w-5 h-5" />
+                  <span>Overview</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('admissions')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'admissions'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <GraduationCap className="w-5 h-5" />
+                  <span>Admissions</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('users')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'users'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <Users className="w-5 h-5" />
+                  <span>Users</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('system-overview')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'system-overview'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <BarChart3 className="w-5 h-5" />
+                  <span>Telemetry</span>
+                </button>
+              </>
+            ) : user?.role === 'facilitator' ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('my-courses')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'my-courses'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <BookOpen className="w-5 h-5" />
+                  <span>Courses</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('sessions')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'sessions'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <Layers className="w-5 h-5" />
+                  <span>Sessions</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('attendance')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'attendance'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <ShieldCheck className="w-5 h-5" />
+                  <span>Attendance</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('gradebook')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'gradebook'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <Award className="w-5 h-5" />
+                  <span>Gradebook</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('home')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'home'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <LayoutDashboard className="w-5 h-5" />
+                  <span>Home</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('id-card')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'id-card'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <CreditCard className="w-5 h-5" />
+                  <span>ID Card</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('courses')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'courses'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <BookOpen className="w-5 h-5" />
+                  <span>Courses</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTool('schedule')}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold transition ${
+                    activeTool === 'schedule'
+                      ? 'text-[#05286f] dark:text-[#8ee079]'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  <Calendar className="w-5 h-5" />
+                  <span>Schedule</span>
+                </button>
+              </>
+            )}
+
+            {/* Menu Trigger */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-[10px] font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
+            >
+              <Menu className="w-5 h-5" />
+              <span>Menu</span>
+            </button>
+          </nav>
         </div>
       </div>
 

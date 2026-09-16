@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { PortalLayout } from './components/SakaiLayout';
 import { LoginScreen } from './components/LoginScreen';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { AutoMobileInstallPrompt } from './components/AutoMobileInstallPrompt';
 import { DigitalIdCard } from './components/DigitalIdCard';
 import { DualSidedIdCard } from './components/DualSidedIdCard';
 import { VerifyView } from './components/VerifyView';
@@ -80,15 +81,18 @@ function MainApp() {
   // Public candidate registration view
   if (isRegistering) {
     return (
-      <RegistrationForm
-        onBackToLogin={() => {
-          setIsRegistering(false);
-          window.history.pushState({}, '', '/');
-        }}
-        onRegistrationComplete={() => {
-          // Keep showing confirmation card inside RegistrationForm
-        }}
-      />
+      <>
+        <AutoMobileInstallPrompt />
+        <RegistrationForm
+          onBackToLogin={() => {
+            setIsRegistering(false);
+            window.history.pushState({}, '', '/');
+          }}
+          onRegistrationComplete={() => {
+            // Keep showing confirmation card inside RegistrationForm
+          }}
+        />
+      </>
     );
   }
 
@@ -108,6 +112,7 @@ function MainApp() {
     return (
       <>
         <OfflineIndicator />
+        <AutoMobileInstallPrompt />
         <LoginScreen
           onOpenRegister={() => {
             setIsRegistering(true);
@@ -250,8 +255,9 @@ function MainApp() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col selection:bg-blue-500/20 selection:text-blue-900 dark:selection:text-white">
-      {/* Offline Status Beacon */}
+      {/* Offline Status Beacon & Automated Mobile Install Prompt */}
       <OfflineIndicator />
+      <AutoMobileInstallPrompt />
 
       {/* Academic LMS Shell Layout */}
       <PortalLayout

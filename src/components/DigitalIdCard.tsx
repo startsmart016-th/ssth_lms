@@ -20,6 +20,7 @@ import {
   Printer,
 } from 'lucide-react';
 import { PrintableIdCardSheet } from './PrintableIdCardSheet';
+import { safeParseResponse } from '../utils/apiClient';
 
 /**
  * Interface for User Profile matching Mongoose User Schema
@@ -257,8 +258,9 @@ export const DigitalIdCard: React.FC<DigitalIdCardProps> = ({
         if (!fetchedSettings) {
           try {
             const res = await fetch('/api/settings');
-            if (res.ok) {
-              fetchedSettings = await res.json();
+            const parsed = await safeParseResponse(res, null);
+            if (parsed.ok && parsed.data) {
+              fetchedSettings = parsed.data;
             }
           } catch (e) {
             console.warn('Failed to fetch /api/settings, using defaults:', e);
@@ -275,8 +277,9 @@ export const DigitalIdCard: React.FC<DigitalIdCardProps> = ({
                   Authorization: `Bearer ${token}`,
                 },
               });
-              if (res.ok) {
-                fetchedUser = await res.json();
+              const parsed = await safeParseResponse(res, null);
+              if (parsed.ok && parsed.data) {
+                fetchedUser = parsed.data;
               }
             } catch (e) {
               console.warn('Failed to fetch /api/users/me:', e);

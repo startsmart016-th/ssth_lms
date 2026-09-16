@@ -13,7 +13,7 @@ export const PWAInstallButton: React.FC = () => {
       <button
         id="pwa-install-btn"
         onClick={install}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all active:scale-95"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#05286f] hover:bg-[#073aa0] text-white text-xs font-semibold shadow-xs shadow-[#05286f]/20 transition-all active:scale-95 cursor-pointer"
       >
         <Download className="w-3.5 h-3.5" />
         <span>Install App</span>

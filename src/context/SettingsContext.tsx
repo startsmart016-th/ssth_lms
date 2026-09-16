@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { InstitutionSettings } from '../types';
+import { safeParseResponse } from '../utils/apiClient';
 
 interface SettingsContextType {
   settings: InstitutionSettings;
@@ -38,9 +39,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const refreshSettings = async () => {
     try {
-      const res = await fetch('/api/settings');
-      if (res.ok) {
-        const data = await res.json();
+      const res = await fetch('/api/settings', {
+        headers: { Accept: 'application/json' },
+      });
+      const { ok, data } = await safeParseResponse(res);
+      if (ok && data && typeof data === 'object' && data.name) {
         if (data.logoUrl && data.logoUrl.includes('imgur.com')) {
           data.logoUrl = '/logo.png';
         }
@@ -75,13 +78,14 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          Accept: 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(sanitized),
       });
 
-      if (res.ok) {
-        const data = await res.json();
+      const { ok, data } = await safeParseResponse(res);
+      if (ok && data && data.name) {
         setSettings(data);
         return true;
       }
@@ -157,13 +161,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         body: JSON.stringify({ logoData }),
       });
 
-      if (!uploadRes.ok) {
-        const errorData = await uploadRes.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to upload school logo to server.');
+      const { ok, data: result, error: parseError } = await safeParseResponse(uploadRes);
+
+      if (!uploadRes.ok || !ok) {
+        throw new Error(result?.error || parseError || 'Failed to upload school logo to server.');
       }
 
-      const result = await uploadRes.json();
-      const updatedLogoUrl = result.logoUrl || logoData;
+      const updatedLogoUrl = result?.logoUrl || logoData;
 
       // 2. Also ensure updated in institution settings endpoint
       await fetch('/api/settings', {
