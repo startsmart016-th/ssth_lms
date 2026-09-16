@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
-import { safeParseResponse } from '../utils/apiClient';
+import { safeParseResponse, extractErrorMessage } from '../utils/apiClient';
 
 interface AuthContextType {
   user: User | null;
@@ -82,9 +82,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           user: data.user,
         };
       }
-      return { success: false, error: data?.error || parseError || 'Authentication failed' };
+      const rawError = data?.error ?? data?.message ?? parseError ?? 'Authentication failed';
+      return { success: false, error: extractErrorMessage(rawError, 'Authentication failed') };
     } catch (e: any) {
-      return { success: false, error: e.message || 'Network connection failure' };
+      return { success: false, error: extractErrorMessage(e, 'Network connection failure') };
     }
   };
 

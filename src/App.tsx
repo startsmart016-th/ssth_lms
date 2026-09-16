@@ -111,7 +111,7 @@ function MainApp() {
   // If no user is authenticated, display the Universal Dual-Factor Login Screen
   if (!user) {
     return (
-      <>
+      <ErrorBoundary fallbackTitle="Portal Authentication" fallbackMessage="There was a temporary issue loading the institutional login portal.">
         <OfflineIndicator />
         <AutoMobileInstallPrompt />
         <LoginScreen
@@ -125,7 +125,7 @@ function MainApp() {
             else setActiveTab('home');
           }}
         />
-      </>
+      </ErrorBoundary>
     );
   }
 
@@ -231,6 +231,7 @@ function MainApp() {
           onOpenIDCard={() => setActiveTab('id-card')}
           activeSubtab={activeTab as any}
           onSelectSubtab={(tab) => setActiveTab(tab)}
+          currentSiteId={currentSiteId}
         />
       );
     }
@@ -240,6 +241,7 @@ function MainApp() {
         <FacilitatorDashboard
           onOpenIDCard={() => setActiveTab('id-card')}
           activeSubtab={activeTab as any}
+          currentSiteId={currentSiteId}
         />
       );
     }
@@ -250,6 +252,7 @@ function MainApp() {
         onOpenIDCard={() => setActiveTab('id-card')}
         onBrowseCatalog={() => setActiveTab('catalog')}
         activeSubtab={activeTab as any}
+        currentSiteId={currentSiteId}
       />
     );
   };

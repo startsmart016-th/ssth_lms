@@ -1,7 +1,7 @@
 /**
  * StartSmart Tech Hub - Resilient API & Response Parser
  * Prevents "Unexpected token 'T', 'The page c'... is not valid JSON" errors
- * when endpoints return HTML error pages, Cloud Run cold-starts, or proxy errors.
+ * and React Error #31 (objects with keys {code, message} rendered as children).
  */
 
 export interface SafeApiResponse<T = any> {
@@ -13,8 +13,51 @@ export interface SafeApiResponse<T = any> {
 }
 
 /**
+ * Robustly converts any error representation (string, Error instance, object with {code, message}, etc.)
+ * into a safe, human-readable display string. Never returns an object.
+ */
+export function extractErrorMessage(input: any, fallback = 'An unexpected error occurred.'): string {
+  if (!input) return fallback;
+  if (typeof input === 'string') return input.trim() || fallback;
+  if (typeof input === 'number' || typeof input === 'boolean') return String(input);
+  if (input instanceof Error) return input.message || fallback;
+
+  if (typeof input === 'object') {
+    // Check if error has code and message (e.g. Vercel, Firebase, MongoDB, API gateway errors)
+    if (typeof input.message === 'string' && input.message.trim()) {
+      return input.code ? `${input.message} (Code: ${input.code})` : input.message;
+    }
+    // Check if error property exists
+    if (typeof input.error === 'string' && input.error.trim()) {
+      return input.error;
+    }
+    if (typeof input.error === 'object' && input.error !== null) {
+      return extractErrorMessage(input.error, fallback);
+    }
+    if (typeof input.detail === 'string' && input.detail.trim()) {
+      return input.detail;
+    }
+    if (typeof input.msg === 'string' && input.msg.trim()) {
+      return input.msg;
+    }
+    if (input.code !== undefined && input.code !== null) {
+      return `Error (Code: ${input.code})`;
+    }
+    try {
+      const jsonStr = JSON.stringify(input);
+      if (jsonStr !== '{}') return jsonStr;
+    } catch {
+      // ignore
+    }
+  }
+
+  return fallback;
+}
+
+/**
  * Safely parse JSON from a fetch Response.
- * Guaranteed never to throw SyntaxError on unexpected non-JSON text.
+ * Guaranteed never to throw SyntaxError on unexpected non-JSON text
+ * and guaranteed that `error` is always a clean string (never an object).
  */
 export async function safeParseResponse<T = any>(
   response: Response,
@@ -52,10 +95,22 @@ export async function safeParseResponse<T = any>(
     // Attempt JSON parse
     try {
       const data = JSON.parse(trimmed);
+      let parsedError: string | undefined = undefined;
+      if (!response.ok) {
+        if (data?.error !== undefined && data?.error !== null) {
+          parsedError = extractErrorMessage(data.error);
+        } else if (data?.message !== undefined && data?.message !== null) {
+          parsedError = extractErrorMessage(data);
+        } else if (data?.code !== undefined && data?.code !== null) {
+          parsedError = extractErrorMessage(data);
+        } else {
+          parsedError = `Request failed with status ${response.status}`;
+        }
+      }
       return {
         ok: response.ok,
         data,
-        error: !response.ok ? (data?.error || data?.message || `Request failed with status ${response.status}`) : undefined,
+        error: parsedError,
       };
     } catch {
       return {
@@ -68,7 +123,7 @@ export async function safeParseResponse<T = any>(
     return {
       ok: false,
       data: (fallbackData ?? (Array.isArray(fallbackData) ? [] : {})) as T,
-      error: err.message || 'Error processing network response.',
+      error: extractErrorMessage(err, 'Error processing network response.'),
     };
   }
 }
@@ -108,3 +163,5 @@ export async function safeApiFetch<T = any>(
     };
   }
 }
+
+export default extractErrorMessage;

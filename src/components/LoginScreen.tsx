@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { ThemeToggle } from './ThemeToggle';
 import { PWAInstallButton } from './PWAInstallButton';
+import { extractErrorMessage } from '../utils/apiClient';
 import {
   ShieldCheck,
   Lock,
@@ -17,6 +18,8 @@ import {
   Fingerprint,
   Sparkles,
   MapPin,
+  KeyRound,
+  User,
 } from 'lucide-react';
 
 interface LoginScreenProps {
@@ -34,6 +37,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onOpen
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const fillDemoCredentials = (role: 'admin' | 'facilitator' | 'student') => {
+    setErrorMessage(null);
+    if (role === 'admin') {
+      setIdentifier('seidu.admin@startsmart.tech');
+      setPassword('password123');
+      setPin('12345');
+    } else if (role === 'facilitator') {
+      setIdentifier('seidu.facilitator@startsmart.tech');
+      setPassword('password123');
+      setPin('12345');
+    } else {
+      setIdentifier('seidu.student@startsmart.tech');
+      setPassword('password123');
+      setPin('12345');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,10 +83,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onOpen
           onLoginSuccess(res.user.role, res.redirectUrl || `/${res.user.role}/dashboard`);
         }
       } else {
-        setErrorMessage(res.error || 'Authentication failed. Please check your credentials.');
+        setErrorMessage(extractErrorMessage(res.error, 'Authentication failed. Please check your credentials.'));
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Network connection failure.');
+      setErrorMessage(extractErrorMessage(err, 'Network connection failure.'));
     } finally {
       setSubmitting(false);
     }
@@ -151,9 +171,45 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onOpen
           {errorMessage && (
             <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-800/80 flex items-start gap-2.5 text-xs text-rose-700 dark:text-rose-200 animate-fadeIn">
               <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
-              <div className="leading-snug">{errorMessage}</div>
+              <div className="leading-snug">
+                {typeof errorMessage === 'string' ? errorMessage : extractErrorMessage(errorMessage)}
+              </div>
             </div>
           )}
+
+          {/* Quick Institutional Role Credentials Autofill */}
+          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#040e24] border border-slate-200 dark:border-slate-800/90 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold tracking-wide uppercase text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <KeyRound className="w-3.5 h-3.5 text-[#05286f] dark:text-[#8ee079]" />
+                Demo Credentials (1-Click Fill)
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">PIN: 12345</span>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                onClick={() => fillDemoCredentials('admin')}
+                className="px-2 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#07193b] border border-slate-200 dark:border-slate-700 hover:border-[#05286f] dark:hover:border-[#8ee079] text-slate-800 dark:text-slate-200 transition-all text-center cursor-pointer shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemoCredentials('facilitator')}
+                className="px-2 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#07193b] border border-slate-200 dark:border-slate-700 hover:border-[#05286f] dark:hover:border-[#8ee079] text-slate-800 dark:text-slate-200 transition-all text-center cursor-pointer shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Facilitator
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemoCredentials('student')}
+                className="px-2 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#07193b] border border-slate-200 dark:border-slate-700 hover:border-[#05286f] dark:hover:border-[#8ee079] text-slate-800 dark:text-slate-200 transition-all text-center cursor-pointer shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Student
+              </button>
+            </div>
+          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">

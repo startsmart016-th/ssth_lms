@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Course, CourseSession, CourseSessionMaterial } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { extractErrorMessage } from '../../utils/apiClient';
 import {
   BookOpen,
   Plus,
@@ -449,7 +450,9 @@ export const AdminCatalogManager: React.FC<AdminCatalogManagerProps> = ({ onCata
           ) : (
             <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
           )}
-          <span className="text-xs font-semibold">{notification.message}</span>
+          <span className="text-xs font-semibold">
+            {typeof notification.message === 'string' ? notification.message : extractErrorMessage(notification.message)}
+          </span>
         </div>
       )}
 

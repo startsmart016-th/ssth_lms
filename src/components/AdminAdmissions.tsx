@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { User, AdmissionLetterData } from '../types';
 import { AdmissionLetter } from './AdmissionLetter';
-import { safeParseResponse } from '../utils/apiClient';
+import { safeParseResponse, extractErrorMessage } from '../utils/apiClient';
 import {
   Users,
   CheckCircle2,
@@ -138,10 +138,11 @@ export const AdminAdmissions: React.FC<AdminAdmissionsProps> = ({ onApproved }) 
         loadAdmissionsData();
         onApproved?.();
       } else {
-        setActionErrorMsg(data?.error || parsed.error || 'Failed to approve applicant.');
+        const rawErr = data?.error || parsed.error || 'Failed to approve applicant.';
+        setActionErrorMsg(extractErrorMessage(rawErr, 'Failed to approve applicant.'));
       }
     } catch (err: any) {
-      setActionErrorMsg(err.message || 'Network error while approving student.');
+      setActionErrorMsg(extractErrorMessage(err, 'Network error while approving student.'));
     } finally {
       setApprovingId(null);
     }
@@ -169,10 +170,11 @@ export const AdminAdmissions: React.FC<AdminAdmissionsProps> = ({ onApproved }) 
       } else {
         const parsed = await safeParseResponse(res, {});
         const errData = parsed.data as any;
-        setActionErrorMsg(errData?.error || parsed.error || 'Failed to reject applicant.');
+        const rawErr = errData?.error || parsed.error || 'Failed to reject applicant.';
+        setActionErrorMsg(extractErrorMessage(rawErr, 'Failed to reject applicant.'));
       }
     } catch (err: any) {
-      setActionErrorMsg(err.message || 'Network communication error.');
+      setActionErrorMsg(extractErrorMessage(err, 'Network communication error.'));
     } finally {
       setRejectingId(null);
     }
@@ -335,7 +337,7 @@ export const AdminAdmissions: React.FC<AdminAdmissionsProps> = ({ onApproved }) 
         <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-            <span>{actionErrorMsg}</span>
+            <span>{typeof actionErrorMsg === 'string' ? actionErrorMsg : extractErrorMessage(actionErrorMsg)}</span>
           </div>
           <button onClick={() => setActionErrorMsg(null)} className="text-rose-600 dark:text-rose-400 hover:opacity-80">
             <XCircle className="w-4 h-4" />

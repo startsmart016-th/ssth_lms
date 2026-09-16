@@ -13,6 +13,7 @@ import { AdminBroadcasts } from '../components/admin/AdminBroadcasts';
 import { AdminAuditLogs } from '../components/admin/AdminAuditLogs';
 import { AdminSystemOverview } from '../components/admin/AdminSystemOverview';
 import { MongoAtlasStatusCard } from '../components/MongoAtlasStatusCard';
+import { AdminAssignmentsManager } from '../components/admin/AdminAssignmentsManager';
 import {
   Settings,
   Users,
@@ -42,14 +43,16 @@ import {
 
 interface AdminDashboardProps {
   onOpenIDCard: () => void;
-  activeSubtab?: 'overview' | 'system-overview' | 'catalog' | 'users' | 'settings' | 'admissions' | 'profile' | 'certificates' | 'broadcasts' | 'audit-logs' | string;
+  activeSubtab?: string;
   onSelectSubtab?: (tab: string) => void;
+  currentSiteId?: string;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onOpenIDCard,
   activeSubtab: propActiveSubtab = 'overview',
   onSelectSubtab,
+  currentSiteId,
 }) => {
   const { settings, updateSettings, refreshSettings, uploadLogo } = useSettings();
   const { token, user } = useAuth();
@@ -388,7 +391,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         />
       )}
 
-      {activeSubtab === 'users' && (
+      {(activeSubtab === 'users' || activeSubtab === 'roster') && (
         <AdminUserManagement
           usersList={usersList}
           token={token}
@@ -396,7 +399,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         />
       )}
 
-      {activeSubtab === 'admissions' && (
+      {(activeSubtab === 'admissions' || activeSubtab === 'admission-letter') && (
         <AdminAdmissions
           onApproved={() => {
             loadData();
@@ -404,16 +407,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         />
       )}
 
-      {activeSubtab === 'catalog' && (
-        <AdminCatalogManager />
+      {(activeSubtab === 'catalog' || activeSubtab === 'courses' || activeSubtab === 'sessions' || activeSubtab === 'materials') && (
+        <AdminCatalogManager onCatalogChanged={loadData} />
       )}
 
-      {activeSubtab === 'certificates' && (
+      {(activeSubtab === 'certificates' || activeSubtab === 'gradebook') && (
         <AdminCertificateRegistry />
       )}
 
-      {activeSubtab === 'broadcasts' && (
+      {(activeSubtab === 'broadcasts' || activeSubtab === 'announcements') && (
         <AdminBroadcasts token={token} />
+      )}
+
+      {activeSubtab === 'assignments' && (
+        <AdminAssignmentsManager
+          coursesList={coursesList}
+          token={token}
+          currentSiteId={currentSiteId}
+        />
       )}
 
       {activeSubtab === 'audit-logs' && (
@@ -426,6 +437,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             refreshSettings();
             loadData();
           }}
+        />
+      )}
+
+      {/* Fallback to Overview if activeSubtab is unrecognized or not matched */}
+      {![
+        'overview',
+        'system-overview',
+        'users',
+        'roster',
+        'admissions',
+        'admission-letter',
+        'catalog',
+        'courses',
+        'sessions',
+        'materials',
+        'certificates',
+        'gradebook',
+        'broadcasts',
+        'announcements',
+        'audit-logs',
+        'assignments',
+        'profile',
+        'settings',
+      ].includes(activeSubtab) && (
+        <AdminAnalyticsOverview
+          metrics={metrics}
+          usersList={usersList}
+          coursesList={coursesList}
+          loading={loading}
+          onRefresh={loadData}
+          onSelectSubtab={setSubtab}
+          onOpenAddUser={() => setShowGlobalAddUser(true)}
+          onOpenBroadcast={() => setShowGlobalBroadcast(true)}
+          onExportReport={handleExportSystemReport}
         />
       )}
 

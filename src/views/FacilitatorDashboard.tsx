@@ -27,11 +27,13 @@ import {
 interface FacilitatorDashboardProps {
   onOpenIDCard: () => void;
   activeSubtab?: string;
+  currentSiteId?: string;
 }
 
 export const FacilitatorDashboard: React.FC<FacilitatorDashboardProps> = ({
   onOpenIDCard,
   activeSubtab = 'sessions',
+  currentSiteId,
 }) => {
   const { user, token } = useAuth();
   const { settings } = useSettings();
@@ -52,7 +54,7 @@ export const FacilitatorDashboard: React.FC<FacilitatorDashboardProps> = ({
         setCourseViewTab('sessions');
       } else if (activeSubtab === 'assignments') {
         setCourseViewTab('submissions');
-      } else if (activeSubtab === 'gradebook') {
+      } else if (activeSubtab === 'gradebook' || activeSubtab === 'certificates' || activeSubtab === 'roster') {
         setCourseViewTab('cohort');
       } else if (activeSubtab === 'announcements') {
         setCourseViewTab('announcements');
@@ -61,6 +63,19 @@ export const FacilitatorDashboard: React.FC<FacilitatorDashboardProps> = ({
       }
     }
   }, [activeSubtab]);
+
+  // Synchronize selected course with top portal site selector if active
+  useEffect(() => {
+    if (currentSiteId && currentSiteId !== 'workspace' && assignedCourses.length > 0) {
+      const cleanSite = currentSiteId.toLowerCase().replace(/\s+/g, '');
+      const matched = assignedCourses.find(
+        c => c.code.toLowerCase().replace(/\s+/g, '') === cleanSite || c._id === currentSiteId
+      );
+      if (matched) {
+        setSelectedCourse(matched);
+      }
+    }
+  }, [currentSiteId, assignedCourses]);
 
   // Modal forms
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);

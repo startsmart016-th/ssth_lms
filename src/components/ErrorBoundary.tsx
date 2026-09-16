@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home, ShieldAlert } from 'lucide-react';
+import { extractErrorMessage } from '../utils/apiClient';
 
 export interface ErrorBoundaryProps {
   children: ReactNode;
@@ -63,7 +64,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
             {this.state.error && (
               <div className="text-left bg-slate-50 dark:bg-[#030a17] border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-[11px] font-mono text-red-600 dark:text-red-400 overflow-x-auto max-h-32">
-                <p className="font-bold">{this.state.error.name}: {this.state.error.message}</p>
+                <p className="font-bold">{this.state.error.name || 'Application Error'}: {extractErrorMessage(this.state.error)}</p>
               </div>
             )}
 

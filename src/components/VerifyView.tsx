@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle2, AlertTriangle, ShieldCheck, ArrowLeft, Building, Calendar, Hash, ExternalLink } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
-import { safeParseResponse } from '../utils/apiClient';
+import { safeParseResponse, extractErrorMessage } from '../utils/apiClient';
 
 interface VerifyViewProps {
   userId: string;
@@ -23,10 +23,11 @@ export const VerifyView: React.FC<VerifyViewProps> = ({ userId, onClose }) => {
         if (parsed.ok && parsed.data?.verified) {
           setData(parsed.data);
         } else {
-          setError(parsed.data?.message || parsed.error || 'Credential verification record could not be validated.');
+          const rawErr = parsed.data?.message || parsed.error || 'Credential verification record could not be validated.';
+          setError(extractErrorMessage(rawErr, 'Credential verification record could not be validated.'));
         }
       } catch (e: any) {
-        setError(e.message || 'Verification service offline.');
+        setError(extractErrorMessage(e, 'Verification service offline.'));
       } finally {
         setLoading(false);
       }

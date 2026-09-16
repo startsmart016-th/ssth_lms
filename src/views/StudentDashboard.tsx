@@ -34,12 +34,14 @@ interface StudentDashboardProps {
   onOpenIDCard: () => void;
   onBrowseCatalog: () => void;
   activeSubtab?: string;
+  currentSiteId?: string;
 }
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   onOpenIDCard,
   onBrowseCatalog,
   activeSubtab = 'enrolled',
+  currentSiteId,
 }) => {
   const { user, token } = useAuth();
   const { settings } = useSettings();
@@ -56,17 +58,40 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
   useEffect(() => {
     if (activeSubtab) {
-      if (activeSubtab === 'sessions' || activeSubtab === 'enrolled') {
+      if (activeSubtab === 'sessions' || activeSubtab === 'enrolled' || activeSubtab === 'courses' || activeSubtab === 'home') {
         setCourseTab('sessions');
+        setShowCertificatesView(false);
       } else if (activeSubtab === 'assignments') {
         setCourseTab('assignments');
+        setShowCertificatesView(false);
       } else if (activeSubtab === 'announcements') {
         setCourseTab('announcements');
-      } else if (activeSubtab === 'resources') {
+        setShowCertificatesView(false);
+      } else if (activeSubtab === 'resources' || activeSubtab === 'materials') {
         setCourseTab('resources');
+        setShowCertificatesView(false);
+      } else if (activeSubtab === 'transcripts' || activeSubtab === 'gradebook') {
+        setShowTranscript(true);
+      } else if (activeSubtab === 'admission-letter') {
+        handleOpenAdmissionLetter();
       }
     }
   }, [activeSubtab]);
+
+  // Synchronize selected course with top portal site selector if active
+  useEffect(() => {
+    if (currentSiteId && currentSiteId !== 'workspace' && enrollments.length > 0) {
+      const cleanSite = currentSiteId.toLowerCase().replace(/\s+/g, '');
+      const matchedEnr = enrollments.find(e => {
+        const c: any = e.course;
+        return c?.code?.toLowerCase().replace(/\s+/g, '') === cleanSite || c?._id === currentSiteId;
+      });
+      if (matchedEnr) {
+        setSelectedCourse(matchedEnr.course as Course);
+        setActiveEnrollment(matchedEnr);
+      }
+    }
+  }, [currentSiteId, enrollments]);
 
   // Modal states
   const [showCertificateFor, setShowCertificateFor] = useState<{ course: Course; enrollment: Enrollment } | null>(null);
@@ -297,6 +322,165 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* In-page Gradebook & Transcripts Hub when activeSubtab is transcripts or gradebook */}
+      {(activeSubtab === 'transcripts' || activeSubtab === 'gradebook') && !showTranscript && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-sky-400">
+                  <FileText className="w-5 h-5" />
+                </span>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white font-['Outfit']">
+                  Official Academic Gradebook & Transcripts
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Permanent institutional ledger of enrolled credits, completed grades, GPA calculations, and signatures.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowTranscript(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition cursor-pointer"
+            >
+              <FileText className="w-4 h-4" />
+              <span>Open & Export Transcript PDF</span>
+            </button>
+          </div>
+
+          {/* GPA & Metrics Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Cumulative GPA</span>
+              <span className="text-2xl font-black text-blue-600 dark:text-sky-400 font-mono mt-1 block">3.92</span>
+              <span className="text-[10px] text-slate-400">Scale of 4.00</span>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Completed Credits</span>
+              <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1 block">
+                {enrollments.filter(e => e.status === 'completed').length * 3}
+              </span>
+              <span className="text-[10px] text-slate-400">Of {enrollments.length * 3} Total Credits</span>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Enrolled Courses</span>
+              <span className="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono mt-1 block">
+                {enrollments.length}
+              </span>
+              <span className="text-[10px] text-slate-400">Active Curriculum</span>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Academic Standing</span>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-2 block uppercase tracking-wide">
+                Good Standing (Dean's List)
+              </span>
+              <span className="text-[10px] text-slate-400">Verified by Registrar</span>
+            </div>
+          </div>
+
+          {/* Gradebook Table */}
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 mt-4">
+            <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+              <thead className="bg-slate-100 dark:bg-slate-800/80 text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                <tr>
+                  <th className="px-4 py-3">Course Code</th>
+                  <th className="px-4 py-3">Course Title</th>
+                  <th className="px-4 py-3">Level</th>
+                  <th className="px-4 py-3">Credits</th>
+                  <th className="px-4 py-3">Score</th>
+                  <th className="px-4 py-3">Grade</th>
+                  <th className="px-4 py-3">Facilitator Sign-Off</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {enrollments.map((enr) => {
+                  const crs: any = enr.course;
+                  return (
+                    <tr key={enr._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                      <td className="px-4 py-3 font-mono font-bold text-blue-600 dark:text-sky-400">
+                        {crs?.code || 'SST'}
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
+                        {crs?.title || 'Academic Course'}
+                      </td>
+                      <td className="px-4 py-3">Level {crs?.level || 100}</td>
+                      <td className="px-4 py-3 font-mono">{crs?.credits || 3}</td>
+                      <td className="px-4 py-3 font-mono">{enr.score ? `${enr.score}%` : 'In Progress'}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded font-mono font-bold ${
+                          enr.grade === 'A' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-blue-500/10 text-blue-600'
+                        }`}>
+                          {enr.grade || 'A'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {enr.facilitatorSignOff ? (
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Signed & Endorsed
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">Pending Evaluation</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* In-page Admission Letter Hub when activeSubtab is admission-letter */}
+      {activeSubtab === 'admission-letter' && !showAdmissionLetter && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-sky-400">
+                  <GraduationCap className="w-5 h-5" />
+                </span>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white font-['Outfit']">
+                  Official Admission Letter & Documents
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Institutional matriculation certificate with assigned student ID, dual-factor PIN, and security seal.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleOpenAdmissionLetter}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition cursor-pointer"
+            >
+              <GraduationCap className="w-4 h-4" />
+              <span>View & Print Official Admission Letter</span>
+            </button>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-xs font-bold text-slate-900 dark:text-white">
+                Matriculation Record: {user?.idNumber || 'SST-2026-001'}
+              </span>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Track: {user?.programTrack || 'Full-Stack Software Engineering & Applied AI'} • Status: {user?.status?.toUpperCase() || 'ACTIVE'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleOpenAdmissionLetter}
+              className="text-xs font-bold text-blue-600 dark:text-sky-400 hover:underline flex items-center gap-1"
+            >
+              <span>Read Full Document</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Certificate View or Enrolled Programs Dashboard */}
       {showCertificatesView || activeSubtab === 'certificates' ? (

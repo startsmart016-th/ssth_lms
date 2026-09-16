@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import { ThemeToggle } from './ThemeToggle';
 import { PWAInstallButton } from './PWAInstallButton';
-import { safeParseResponse } from '../utils/apiClient';
+import { safeParseResponse, extractErrorMessage } from '../utils/apiClient';
 import {
   GraduationCap,
   Upload,
@@ -137,7 +137,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       const { ok, data: resData, error: parseError } = await safeParseResponse(response);
 
       if (!ok || !response.ok || !resData || resData.success === false) {
-        throw new Error(resData?.error || parseError || 'Failed to process admission registration. Please try again.');
+        const rawErr = resData?.error || parseError || 'Failed to process admission registration. Please try again.';
+        throw new Error(extractErrorMessage(rawErr, 'Failed to process admission registration. Please try again.'));
       }
 
       const applicantData = resData.student || resData.applicant || {};
@@ -153,7 +154,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         onRegistrationComplete(applicantData);
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Network error encountered while submitting application.');
+      setErrorMsg(extractErrorMessage(err, 'Network error encountered while submitting application.'));
     } finally {
       setSubmitting(false);
     }
@@ -389,7 +390,9 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
           {errorMsg && (
             <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-800/80 text-rose-700 dark:text-rose-200 text-xs flex items-start gap-2.5 animate-fadeIn">
               <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
-              <div className="leading-relaxed">{errorMsg}</div>
+              <div className="leading-relaxed">
+                {typeof errorMsg === 'string' ? errorMsg : extractErrorMessage(errorMsg)}
+              </div>
             </div>
           )}
 

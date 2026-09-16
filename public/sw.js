@@ -1,5 +1,5 @@
 // StartSmart Tech Hub - PWA Service Worker
-const CACHE_NAME = 'startsmart-cache-v1';
+const CACHE_NAME = 'startsmart-cache-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -21,23 +21,42 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+          return null;
+        })
       );
     }).then(() => self.clients.claim())
   );
 });
 
-// Fetch event - Network-first for /api/*, Cache-first for static assets with network fallback
+// Fetch event - Network-first for /api/*, bypass dev modules, Cache-first for static assets with network fallback
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
   // Do not intercept non-GET requests or browser extensions
   if (event.request.method !== 'GET' || !url.protocol.startsWith('http')) {
+    return;
+  }
+
+  // Never intercept or cache development modules, Vite internals, or TypeScript source files
+  if (
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.startsWith('/node_modules/') ||
+    url.searchParams.has('t') ||
+    url.searchParams.has('v') ||
+    url.searchParams.has('import') ||
+    url.pathname.endsWith('.ts') ||
+    url.pathname.endsWith('.tsx')
+  ) {
     return;
   }
 
