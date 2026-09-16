@@ -73,13 +73,23 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
   const [newUserTrack, setNewUserTrack] = useState('Computer Fundamentals & IT Tools');
   const [creatingUser, setCreatingUser] = useState(false);
 
+  // Safe Users List
+  const safeUsers = Array.isArray(usersList) ? usersList : [];
+
   // Filtered Users
-  const filteredUsers = usersList.filter((u) => {
+  const filteredUsers = safeUsers.filter((u) => {
+    if (!u) return false;
+    const name = (u.name || '').toLowerCase();
+    const email = (u.email || '').toLowerCase();
+    const idNum = (u.idNumber || '').toLowerCase();
+    const dept = (u.department || '').toLowerCase();
+    const query = searchQuery.toLowerCase();
+
     const matchesSearch =
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.idNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (u.department && u.department.toLowerCase().includes(searchQuery.toLowerCase()));
+      name.includes(query) ||
+      email.includes(query) ||
+      idNum.includes(query) ||
+      dept.includes(query);
 
     const matchesRole = roleFilter === 'all' ? true : u.role === roleFilter;
     const matchesStatus = statusFilter === 'all' ? true : u.status === statusFilter;
@@ -142,7 +152,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
   // CSV Export
   const handleExportCSV = (selectedOnly = false) => {
     const listToExport = selectedOnly
-      ? usersList.filter((u) => selectedUserIds.includes(u._id))
+      ? safeUsers.filter((u) => selectedUserIds.includes(u._id))
       : filteredUsers;
 
     if (listToExport.length === 0) {
@@ -359,7 +369,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
               Institutional User Directory & Role-Based Access Control (RBAC)
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Manage student accounts, instructors, and executive admins. Total records: {usersList.length}
+              Manage student accounts, instructors, and executive admins. Total records: {safeUsers.length}
             </p>
           </div>
 

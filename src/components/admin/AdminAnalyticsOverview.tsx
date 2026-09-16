@@ -45,10 +45,13 @@ export const AdminAnalyticsOverview: React.FC<AdminAnalyticsOverviewProps> = ({
   onOpenBroadcast,
   onExportReport,
 }) => {
-  const pendingCount = metrics?.pendingApplicants ?? usersList.filter(u => u.status === 'pending').length;
-  const activeStudentsCount = metrics?.activeStudents ?? usersList.filter(u => u.role === 'student' && u.status === 'active').length;
-  const facilitatorsCount = metrics?.totalFacilitators ?? usersList.filter(u => u.role === 'facilitator').length;
-  const totalCourses = metrics?.totalCourses ?? coursesList.length;
+  const safeUsers = Array.isArray(usersList) ? usersList : [];
+  const safeCourses = Array.isArray(coursesList) ? coursesList : [];
+
+  const pendingCount = metrics?.pendingApplicants ?? safeUsers.filter(u => u && u.status === 'pending').length;
+  const activeStudentsCount = metrics?.activeStudents ?? safeUsers.filter(u => u && u.role === 'student' && u.status === 'active').length;
+  const facilitatorsCount = metrics?.totalFacilitators ?? safeUsers.filter(u => u && u.role === 'facilitator').length;
+  const totalCourses = metrics?.totalCourses ?? safeCourses.length;
   const completionRate = metrics?.completionRate ?? metrics?.avgCompletionRate ?? 92;
   const certsIssued = metrics?.certificatesIssued ?? 2;
 
@@ -59,7 +62,8 @@ export const AdminAnalyticsOverview: React.FC<AdminAnalyticsOverviewProps> = ({
   const level400 = metrics?.levelBreakdown?.level400 || { courses: 2, enrolledEst: 6 };
 
   // Workstations
-  const workstations = metrics?.labWorkstations || [
+  const rawWorkstations = Array.isArray(metrics?.labWorkstations) ? metrics.labWorkstations : null;
+  const workstations = rawWorkstations || [
     { id: 'WS-01', name: 'Workstation 1 (Dual 4K)', status: 'occupied', student: 'Ibrahim Alhassan', task: 'SST 301 Python Modeling' },
     { id: 'WS-02', name: 'Workstation 2 (CAD/GPU)', status: 'occupied', student: 'Sarah K.', task: 'SST 202 Linux Kernel Build' },
     { id: 'WS-03', name: 'Workstation 3 (Web Dev)', status: 'available', student: null, task: null },
@@ -70,7 +74,7 @@ export const AdminAnalyticsOverview: React.FC<AdminAnalyticsOverviewProps> = ({
     { id: 'WS-08', name: 'Workstation 8 (General)', status: 'available', student: null, task: null },
   ];
 
-  const occupiedCount = workstations.filter((w: any) => w.status === 'occupied').length;
+  const occupiedCount = Array.isArray(workstations) ? workstations.filter((w: any) => w && w.status === 'occupied').length : 0;
 
   return (
     <div className="space-y-6">

@@ -26,7 +26,11 @@ import {
   Check,
 } from 'lucide-react';
 
-export const AdminAdmissions: React.FC = () => {
+export interface AdminAdmissionsProps {
+  onApproved?: () => void;
+}
+
+export const AdminAdmissions: React.FC<AdminAdmissionsProps> = ({ onApproved }) => {
   const { token } = useAuth();
   const { settings } = useSettings();
 
@@ -82,11 +86,11 @@ export const AdminAdmissions: React.FC = () => {
         parseJsonSafe(usersRes),
       ]);
 
-      if (pendingData) {
-        setApplicants(pendingData.applicants || []);
+      if (pendingData && Array.isArray(pendingData.applicants)) {
+        setApplicants(pendingData.applicants);
       }
-      if (usersData) {
-        setAllUsers(usersData || []);
+      if (Array.isArray(usersData)) {
+        setAllUsers(usersData);
       }
     } catch (err: any) {
       console.error('Failed to load admissions:', err);
@@ -132,6 +136,7 @@ export const AdminAdmissions: React.FC = () => {
 
         // Refresh data lists
         loadAdmissionsData();
+        onApproved?.();
       } else {
         setActionErrorMsg(data?.error || parsed.error || 'Failed to approve applicant.');
       }
@@ -212,12 +217,17 @@ export const AdminAdmissions: React.FC = () => {
     }
   };
 
-  const approvedStudents = allUsers.filter(
-    (u) => u.role === 'student' && u.status === 'active'
+  const safeAllUsers = Array.isArray(allUsers) ? allUsers : [];
+  const safeApplicants = Array.isArray(applicants) ? applicants : [];
+
+  const approvedStudents = safeAllUsers.filter(
+    (u) => u && u.role === 'student' && u.status === 'active'
   );
 
   const filterList = (list: User[]) => {
+    if (!Array.isArray(list)) return [];
     return list.filter((user) => {
+      if (!user) return false;
       const q = searchQuery.toLowerCase();
       const matchQuery =
         !searchQuery ||
@@ -234,7 +244,7 @@ export const AdminAdmissions: React.FC = () => {
     });
   };
 
-  const filteredPending = filterList(applicants);
+  const filteredPending = filterList(safeApplicants);
   const filteredApproved = filterList(approvedStudents);
 
   return (
@@ -293,7 +303,7 @@ export const AdminAdmissions: React.FC = () => {
           <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
             <span className="text-[10px] uppercase font-mono text-slate-500 dark:text-slate-400">Level 100/200</span>
             <div className="text-2xl font-black text-blue-600 dark:text-sky-400 font-['Outfit'] mt-0.5">
-              {allUsers.filter((u) => u.programLevel === 100 || u.programLevel === 200).length}
+              {safeAllUsers.filter((u) => u && (u.programLevel === 100 || u.programLevel === 200)).length}
             </div>
             <span className="text-[10px] text-slate-500 dark:text-slate-400">Foundation & Interm.</span>
           </div>
@@ -301,7 +311,7 @@ export const AdminAdmissions: React.FC = () => {
           <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
             <span className="text-[10px] uppercase font-mono text-slate-500 dark:text-slate-400">Level 300/400</span>
             <div className="text-2xl font-black text-purple-600 dark:text-purple-400 font-['Outfit'] mt-0.5">
-              {allUsers.filter((u) => u.programLevel === 300 || u.programLevel === 400).length}
+              {safeAllUsers.filter((u) => u && (u.programLevel === 300 || u.programLevel === 400)).length}
             </div>
             <span className="text-[10px] text-slate-500 dark:text-slate-400">Advanced Tracks</span>
           </div>

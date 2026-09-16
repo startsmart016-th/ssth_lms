@@ -137,9 +137,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         parseJsonSafe(cRes),
       ]);
 
-      if (metricsData) setMetrics(metricsData);
-      if (usersData) setUsersList(usersData);
-      if (coursesData) setCoursesList(coursesData);
+      if (metricsData && typeof metricsData === 'object' && !metricsData.error) {
+        setMetrics(metricsData);
+      }
+      if (Array.isArray(usersData) && usersData.length > 0) {
+        setUsersList(usersData);
+      }
+      if (Array.isArray(coursesData) && coursesData.length > 0) {
+        setCoursesList(coursesData);
+      }
     } catch (e) {
       console.error('Failed to load admin data:', e);
     } finally {
@@ -254,30 +260,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Export Full Executive System Report (.CSV)
   const handleExportSystemReport = () => {
     const dateStr = new Date().toISOString().split('T')[0];
+    const safeUsers = Array.isArray(usersList) ? usersList : [];
+    const safeCourses = Array.isArray(coursesList) ? coursesList : [];
+
     const reportLines = [
       'STARTSMART ACADEMY - EXECUTIVE INSTITUTIONAL REPORT',
       `Generated On,${new Date().toISOString()}`,
       `Authorized By,"${user?.name || 'Chief Administrator'}"`,
       '',
       'CAMPUS EXECUTIVE TELEMETRY',
-      `Total Students Enrolled,${metrics?.totalStudents || usersList.filter(u => u.role === 'student').length}`,
-      `Active Students,${metrics?.activeStudents || usersList.filter(u => u.role === 'student' && u.status === 'active').length}`,
-      `Instructional Facilitators,${metrics?.totalFacilitators || usersList.filter(u => u.role === 'facilitator').length}`,
-      `Executive Administrators,${metrics?.totalAdmins || usersList.filter(u => u.role === 'admin').length}`,
-      `Total Catalog Courses,${metrics?.totalCourses || coursesList.length}`,
+      `Total Students Enrolled,${metrics?.totalStudents || safeUsers.filter(u => u && u.role === 'student').length}`,
+      `Active Students,${metrics?.activeStudents || safeUsers.filter(u => u && u.role === 'student' && u.status === 'active').length}`,
+      `Instructional Facilitators,${metrics?.totalFacilitators || safeUsers.filter(u => u && u.role === 'facilitator').length}`,
+      `Executive Administrators,${metrics?.totalAdmins || safeUsers.filter(u => u && u.role === 'admin').length}`,
+      `Total Catalog Courses,${metrics?.totalCourses || safeCourses.length}`,
       `Dual-Signed Certificates Issued,${metrics?.certificatesIssued || 2}`,
       `Average Completion Rate,${metrics?.avgCompletionRate || 92}%`,
-      `Pending Admission Applicants,${metrics?.pendingApplicants || usersList.filter(u => u.status === 'pending').length}`,
+      `Pending Admission Applicants,${metrics?.pendingApplicants || safeUsers.filter(u => u && u.status === 'pending').length}`,
       '',
       'CURRICULUM LEVEL BREAKDOWN',
-      `Level 100 Foundation,${coursesList.filter(c => c.level === 100).length} Courses`,
-      `Level 200 Intermediate,${coursesList.filter(c => c.level === 200).length} Courses`,
-      `Level 300 Advanced,${coursesList.filter(c => c.level === 300).length} Courses`,
-      `Level 400 Capstone,${coursesList.filter(c => c.level === 400).length} Courses`,
+      `Level 100 Foundation,${safeCourses.filter(c => c && c.level === 100).length} Courses`,
+      `Level 200 Intermediate,${safeCourses.filter(c => c && c.level === 200).length} Courses`,
+      `Level 300 Advanced,${safeCourses.filter(c => c && c.level === 300).length} Courses`,
+      `Level 400 Capstone,${safeCourses.filter(c => c && c.level === 400).length} Courses`,
       '',
       'USER REGISTRY SNAPSHOT',
       'User ID,Full Name,Email,Role,Department,Status',
-      ...usersList.map(u => `"${u.idNumber}","${u.fullName || u.name}","${u.email}","${u.role.toUpperCase()}","${u.department || 'School of Technology'}","${u.status.toUpperCase()}"`),
+      ...safeUsers.map(u => `"${u?.idNumber || ''}","${u?.fullName || u?.name || ''}","${u?.email || ''}","${(u?.role || '').toUpperCase()}","${u?.department || 'School of Technology'}","${(u?.status || '').toUpperCase()}"`),
     ];
 
     const csvContent = 'data:text/csv;charset=utf-8,' + reportLines.join('\n');
@@ -290,14 +299,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     document.body.removeChild(link);
   };
 
-  const pendingAdmissionsCount = metrics?.pendingApplicants ?? usersList.filter(u => u.status === 'pending').length;
+  const safeUsers = Array.isArray(usersList) ? usersList : [];
+  const safeCourses = Array.isArray(coursesList) ? coursesList : [];
+  const pendingAdmissionsCount = metrics?.pendingApplicants ?? safeUsers.filter(u => u && u.status === 'pending').length;
 
   const cockpitTabs = [
     { id: 'overview', label: 'Executive Overview', icon: LayoutDashboard },
     { id: 'system-overview', label: 'System Overview', icon: BarChart3, badge: 'Live', badgeColor: 'bg-emerald-500 text-white' },
-    { id: 'users', label: 'User Directory & RBAC', icon: Users, badge: usersList.length },
+    { id: 'users', label: 'User Directory & RBAC', icon: Users, badge: safeUsers.length },
     { id: 'admissions', label: 'Admissions Pipeline', icon: GraduationCap, badge: pendingAdmissionsCount, badgeColor: 'bg-amber-500 text-white' },
-    { id: 'catalog', label: 'Course Catalog (100–400)', icon: BookOpen, badge: coursesList.length },
+    { id: 'catalog', label: 'Course Catalog (100–400)', icon: BookOpen, badge: safeCourses.length },
     { id: 'certificates', label: 'Certificate Registry', icon: Award },
     { id: 'broadcasts', label: 'Campus Broadcasts', icon: Megaphone },
     { id: 'audit-logs', label: 'System Health & Audit', icon: Activity },

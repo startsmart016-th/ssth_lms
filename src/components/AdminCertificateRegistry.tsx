@@ -551,9 +551,8 @@ export const AdminCertificateRegistry: React.FC<AdminCertificateRegistryProps> =
                   name: previewEnrollment.student?.name || 'Academic Candidate',
                   email: previewEnrollment.student?.email || 'student@startsmart.edu',
                   department: previewEnrollment.student?.department || 'School of Technology',
-                }}
+                } as any}
                 enrollments={[previewEnrollment]}
-                courses={previewEnrollment.course ? [previewEnrollment.course] : []}
                 token={token || undefined}
                 onRefreshEnrollments={fetchRegistry}
               />

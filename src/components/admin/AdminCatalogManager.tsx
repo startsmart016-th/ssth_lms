@@ -80,9 +80,10 @@ export const AdminCatalogManager: React.FC<AdminCatalogManagerProps> = ({ onCata
       const res = await fetch('/api/courses');
       if (res.ok) {
         const data = await res.json();
-        setCourses(data);
+        const safeData = Array.isArray(data) ? data : [];
+        setCourses(safeData);
         if (managingSessionsCourse) {
-          const updated = data.find((c: Course) => c._id === managingSessionsCourse._id);
+          const updated = safeData.find((c: Course) => c._id === managingSessionsCourse._id);
           if (updated) setManagingSessionsCourse(updated);
         }
       }
@@ -387,13 +388,20 @@ export const AdminCatalogManager: React.FC<AdminCatalogManagerProps> = ({ onCata
     }
   };
 
-  const filteredCourses = courses.filter((c) => {
+  const safeCourses = Array.isArray(courses) ? courses : [];
+  const filteredCourses = safeCourses.filter((c) => {
+    if (!c) return false;
     const matchesLevel = selectedLevel === 'all' ? true : c.level === selectedLevel;
+    const code = (c.code || '').toLowerCase();
+    const title = (c.title || '').toLowerCase();
+    const fac = (c.facilitatorName || '').toLowerCase();
+    const desc = (c.description || '').toLowerCase();
+    const q = searchQuery.toLowerCase();
     const matchesSearch =
-      c.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (c.facilitatorName && c.facilitatorName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      code.includes(q) ||
+      title.includes(q) ||
+      fac.includes(q) ||
+      desc.includes(q);
     return matchesLevel && matchesSearch;
   });
 

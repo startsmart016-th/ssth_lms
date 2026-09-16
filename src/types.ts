@@ -89,6 +89,7 @@ export interface CourseAnnouncement {
   id: string;
   title: string;
   content: string;
+  message?: string;
   authorName: string;
   date: string;
 }
@@ -128,6 +129,7 @@ export interface Assignment {
 export interface Submission {
   _id: string;
   assignmentId: string;
+  assignment?: string;
   studentId: string;
   studentName: string;
   studentIdNumber: string;

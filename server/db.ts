@@ -1085,6 +1085,10 @@ export function getDatabaseStatus() {
 }
 
 export async function connectDB() {
+  if (mongoose.connection.readyState === 1) {
+    return true;
+  }
+
   const uri = process.env.MONGODB_URI || MONGODB_SRV_URI_TEMPLATE;
 
   // If the user hasn't replaced the password placeholder yet, warn clearly and use local store

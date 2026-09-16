@@ -552,7 +552,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               ) : (
                 <div className="space-y-3">
                   {assignments.map(asg => {
-                    const submission = submissions.find(s => s.assignment === asg._id);
+                    const submission = submissions.find(s => s.assignmentId === asg._id || s.assignment === asg._id);
                     const isSubmitted = !!submission;
                     const isGraded = submission?.status === 'graded';
 

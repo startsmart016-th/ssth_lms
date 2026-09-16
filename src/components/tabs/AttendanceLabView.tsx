@@ -34,7 +34,7 @@ export const AttendanceLabView: React.FC = () => {
   const initialRecords: AttendanceRecord[] = [
     {
       id: 'att-1',
-      studentId: user?.id || 'STU-9901',
+      studentId: user?.idNumber || user?._id || 'STU-9901',
       studentName: user?.fullName || user?.name || 'Ibrahim Alhassan',
       courseCode: 'SST 301',
       date: '2026-03-12',
@@ -47,7 +47,7 @@ export const AttendanceLabView: React.FC = () => {
     },
     {
       id: 'att-2',
-      studentId: user?.id || 'STU-9901',
+      studentId: user?.idNumber || user?._id || 'STU-9901',
       studentName: user?.fullName || user?.name || 'Ibrahim Alhassan',
       courseCode: 'SST 201',
       date: '2026-03-11',
@@ -60,7 +60,7 @@ export const AttendanceLabView: React.FC = () => {
     },
     {
       id: 'att-3',
-      studentId: user?.id || 'STU-9901',
+      studentId: user?.idNumber || user?._id || 'STU-9901',
       studentName: user?.fullName || user?.name || 'Ibrahim Alhassan',
       courseCode: 'HUB-OPEN',
       date: '2026-03-10',
@@ -73,7 +73,7 @@ export const AttendanceLabView: React.FC = () => {
     },
     {
       id: 'att-4',
-      studentId: user?.id || 'STU-9901',
+      studentId: user?.idNumber || user?._id || 'STU-9901',
       studentName: user?.fullName || user?.name || 'Ibrahim Alhassan',
       courseCode: 'SST 101',
       date: '2026-03-09',
@@ -142,7 +142,7 @@ export const AttendanceLabView: React.FC = () => {
       const hours = Math.max(0.5, Number((elapsedMinutes / 60).toFixed(2)));
       const newRec: AttendanceRecord = {
         id: `att-${Date.now()}`,
-        studentId: user?.id || 'STU-9901',
+        studentId: user?.idNumber || user?._id || 'STU-9901',
         studentName: user?.fullName || user?.name || 'Scholar',
         courseCode: 'SST 301',
         date: dateStr,
@@ -183,7 +183,7 @@ export const AttendanceLabView: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `StartSmart_Attendance_${user?.id || 'Record'}.csv`);
+    link.setAttribute('download', `StartSmart_Attendance_${user?.idNumber || user?._id || 'Record'}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -317,7 +317,7 @@ export const AttendanceLabView: React.FC = () => {
               {qrToken}
             </span>
             <span className="text-[10px] text-slate-400 font-medium block">
-              Student ID: {user?.id || 'STU-9901'} • Validated
+              Student ID: {user?.idNumber || user?._id || 'STU-9901'} • Validated
             </span>
           </div>
 

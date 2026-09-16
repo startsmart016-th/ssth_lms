@@ -19,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 
 interface AdminProfileEditorProps {
   onProfileUpdated?: () => void;
+  onProfileSaved?: () => void;
 }
 
 const AVATAR_PRESETS = [

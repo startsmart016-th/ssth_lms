@@ -28,6 +28,7 @@ import { ForumsView } from './components/tabs/ForumsView';
 import { ProjectsShowcaseView } from './components/tabs/ProjectsShowcaseView';
 import { AttendanceLabView } from './components/tabs/AttendanceLabView';
 import { PreferencesView } from './components/tabs/PreferencesView';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function MainApp() {
   const { user, loading: authLoading } = useAuth();
@@ -179,9 +180,9 @@ function MainApp() {
             </div>
           </div>
           {idFormat === 'vertical' ? (
-            <DigitalIdCard user={user} settings={settings} onOpenVerify={(id) => setVerifyUserId(id)} />
+            <DigitalIdCard user={user as any} settings={settings} onOpenVerify={(id) => setVerifyUserId(id)} />
           ) : (
-            <DualSidedIdCard user={user} onOpenVerify={(id) => setVerifyUserId(id)} />
+            <DualSidedIdCard user={user as any} onOpenVerify={(id) => setVerifyUserId(id)} />
           )}
         </div>
       );
@@ -268,7 +269,9 @@ function MainApp() {
         onSelectSite={setCurrentSiteId}
         sitesList={sitesList}
       >
-        {renderActiveView()}
+        <ErrorBoundary fallbackTitle="Subsystem View Notice" fallbackMessage="This tab view encountered an issue. Switch to another tab or reload to restore state.">
+          {renderActiveView()}
+        </ErrorBoundary>
       </PortalLayout>
 
       {/* Profile & Signature Modal */}
@@ -284,12 +287,14 @@ function MainApp() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <SettingsProvider>
-        <AuthProvider>
-          <MainApp />
-        </AuthProvider>
-      </SettingsProvider>
-    </ThemeProvider>
+    <ErrorBoundary fallbackTitle="StartSmart Tech Hub Error Boundary" fallbackMessage="The application layout encountered an unexpected error. Please reload to restore session.">
+      <ThemeProvider>
+        <SettingsProvider>
+          <AuthProvider>
+            <MainApp />
+          </AuthProvider>
+        </SettingsProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }

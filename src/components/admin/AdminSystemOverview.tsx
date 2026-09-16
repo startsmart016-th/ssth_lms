@@ -97,7 +97,7 @@ export const AdminSystemOverview: React.FC<AdminSystemOverviewProps> = ({
     };
   }, [metrics]);
 
-  const activeGrowthData = userGrowthData[timeRange];
+  const activeGrowthData = Array.isArray(userGrowthData[timeRange]) ? userGrowthData[timeRange] : [];
 
   const courseCompletionData = useMemo(() => {
     return (
